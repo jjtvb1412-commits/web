@@ -1,440 +1,467 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบหลังบ้านจัดการร้านค้า (Store Admin Dashboard)</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Sarabun', sans-serif; }
-    </style>
-</head>
-<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col">
-
-    <!-- Header / Navbar -->
-    <header class="bg-slate-900 text-white shadow-md sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-            <div class="flex items-center space-x-3">
-                <div class="bg-indigo-600 p-2 rounded-lg">
-                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                </div>
-                <div>
-                    <h1 class="text-lg font-bold leading-tight">ระบบหลังบ้านจัดการสินค้า</h1>
-                    <p class="text-xs text-slate-400">Store Management Admin Panel (100 รายการ)</p>
-                </div>
-            </div>
-            <div class="flex items-center space-x-3 text-sm">
-                <button onclick="resetData()" class="bg-rose-600/80 hover:bg-rose-600 text-white px-3 py-1.5 rounded-lg text-xs transition">🔄 รีเซ็ตข้อมูล 100 รายการ</button>
-            </div>
-        </div>
-    </header>
-
-    <!-- Main Container -->
-    <main class="max-w-7xl mx-auto px-4 py-6 w-full flex-grow grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-        <!-- Stat Cards Summary -->
-        <div class="lg:col-span-12 grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                <p class="text-xs text-slate-500 font-medium">สินค้าทั้งหมด</p>
-                <p id="statTotal" class="text-2xl font-bold text-slate-900 mt-1">0</p>
-            </div>
-            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                <p class="text-xs text-slate-500 font-medium">รวมมูลค่าสต็อกสินค้า</p>
-                <p id="statValue" class="text-2xl font-bold text-indigo-600 mt-1">฿0</p>
-            </div>
-            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                <p class="text-xs text-amber-600 font-medium">สต็อกใกล้หมด (< 20 ชิ้น)</p>
-                <p id="statLowStock" class="text-2xl font-bold text-amber-600 mt-1">0</p>
-            </div>
-            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                <p class="text-xs text-rose-600 font-medium">สินค้าหมดสต็อก (0 ชิ้น)</p>
-                <p id="statOutStock" class="text-2xl font-bold text-rose-600 mt-1">0</p>
-            </div>
-        </div>
-
-        <!-- Left Column: Add / Edit Product Form -->
-        <section class="lg:col-span-4">
-            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm sticky top-20">
-                <div class="flex justify-between items-center mb-4 pb-2 border-b">
-                    <h2 id="formTitle" class="text-base font-bold text-slate-800 flex items-center gap-2">
-                        <span class="text-indigo-600">📦</span> เพิ่มสินค้าใหม่
-                    </h2>
-                    <button id="cancelEditBtn" onclick="resetForm()" class="hidden text-xs text-slate-400 hover:text-slate-600">ยกเลิกแก้ไข</button>
-                </div>
-
-                <form id="productForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
-                    <input type="hidden" id="editIndex" value="-1">
-
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">รหัสสินค้า (ID) *</label>
-                        <input type="text" id="pId" required placeholder="เช่น P001" class="w-full text-sm border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500 outline-none">
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">ชื่อสินค้า *</label>
-                        <input type="text" id="pName" required placeholder="ชื่อสินค้า..." class="w-full text-sm border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500 outline-none">
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">หมวดหมู่ *</label>
-                            <select id="pCategory" required class="w-full text-sm border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500 outline-none">
-                                <option value="ขนม">ขนม</option>
-                                <option value="เครื่องใช้จิปาถะ">เครื่องใช้จิปาถะ</option>
-                                <option value="แอลกอฮอล์">แอลกอฮอล์</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">ราคา (บาท) *</label>
-                            <input type="number" id="pPrice" step="0.01" min="0" required placeholder="0.00" class="w-full text-sm border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500 outline-none">
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">จำนวนคงเหลือในสต็อก *</label>
-                        <input type="number" id="pStock" min="0" required placeholder="0" class="w-full text-sm border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500 outline-none">
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">รายละเอียดสินค้า</label>
-                        <textarea id="pDesc" rows="2" placeholder="คำอธิบายเพิ่มเติม..." class="w-full text-sm border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500 outline-none"></textarea>
-                    </div>
-
-                    <button type="submit" id="submitBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-lg transition text-sm shadow-md">
-                        ➕ เพิ่มรายการสินค้า
-                    </button>
-                </form>
-            </div>
-        </section>
-
-        <!-- Right Column: Product Table List -->
-        <section class="lg:col-span-8 space-y-4">
-            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                <!-- Filter & Search Controls -->
-                <div class="flex flex-col md:flex-row justify-between items-center gap-3 mb-4">
-                    <div class="w-full md:w-1/2">
-                        <input type="text" id="searchInput" onkeyup="renderProducts()" placeholder="🔍 ค้นหารหัส หรือชื่อสินค้า..." class="w-full text-sm border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-indigo-500 outline-none">
-                    </div>
-                    <div class="w-full md:w-1/2 flex gap-2">
-                        <select id="categoryFilter" onchange="renderProducts()" class="w-full text-sm border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-indigo-500 outline-none">
-                            <option value="ALL">ทุกหมวดหมู่</option>
-                            <option value="ขนม">ขนม</option>
-                            <option value="เครื่องใช้จิปาถะ">เครื่องใช้จิปาถะ</option>
-                            <option value="แอลกอฮอล์">แอลกอฮอล์</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Products Table -->
-                <div class="overflow-x-auto max-h-[600px] overflow-y-auto border border-slate-200 rounded-lg">
-                    <table class="w-full text-left border-collapse text-xs md:text-sm">
-                        <thead class="bg-slate-100 text-slate-600 font-semibold sticky top-0 border-b">
-                            <tr>
-                                <th class="p-3">รหัส</th>
-                                <th class="p-3">ชื่อสินค้า</th>
-                                <th class="p-3">หมวดหมู่</th>
-                                <th class="p-3 text-right">ราคา</th>
-                                <th class="p-3 text-center">คงเหลือ</th>
-                                <th class="p-3 text-center">จัดการ</th>
-                            </tr>
-                        </thead>
-                        <tbody id="productTableBody" class="divide-y divide-slate-100">
-                            <!-- JS Will Render Rows Here -->
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="flex justify-between items-center text-xs text-slate-500 mt-3 px-1">
-                    <span id="showingText">แสดง 0 รายการ</span>
-                    <span class="text-slate-400">อัปเดตแบบ Real-time</span>
-                </div>
-            </div>
-        </section>
-
-    </main>
-
-    <script>
-        // 100 Initial Sample Products Data
-                const defaultProducts = [
-            {"id": "P001", "name": "เค้กช็อกโกแลต", "category": "ขนม", "price": 45.0, "stock": 32, "description": "เค้กชิ้นเล็ก รสช็อกโกแลตเข้ม หอมหวานพอดี"},
-            {"id": "P002", "name": "บะหมี่กึ่งสำเร็จรูปรสต้มยำ", "category": "ขนม", "price": 28.0, "stock": 48, "description": "บะหมี่กึ่งสำเร็จรูป รสต้มยำแซ่บอร่อย"},
-            {"id": "P003", "name": "ชิปสไลซ์เค็ม", "category": "ขนม", "price": 19.0, "stock": 60, "description": "ขนมขบเคี้ยวกรอบ เค็มกำลังดี"},
-            {"id": "P004", "name": "มีดโกน", "category": "เครื่องใช้จิปาถะ", "price": 35.0, "stock": 18, "description": "มีดโกนแบบใช้แล้วทิ้ง ความคมพอเหมาะ"},
-            {"id": "P005", "name": "ฟองน้ำล้างจาน", "category": "เครื่องใช้จิปาถะ", "price": 24.0, "stock": 52, "description": "ฟองน้ำล้างจานเบา ใช้งานได้ยาว"},
-            {"id": "P006", "name": "ถ้วยกาแฟพลาสติก", "category": "เครื่องใช้จิปาถะ", "price": 39.0, "stock": 27, "description": "ถ้วยใส่อาหารและเครื่องดื่ม เหมาะใช้ทุกวัน"},
-            {"id": "P007", "name": "ผ้าเช็ดปาก", "category": "เครื่องใช้จิปาถะ", "price": 29.0, "stock": 44, "description": "ผ้าเช็ดปากขนาดพอดีมือ ใช้งานสะดวก"},
-            {"id": "P008", "name": "เบียร์สิงห์", "category": "แอลกอฮอล์", "price": 75.0, "stock": 24, "description": "เบียร์สิงห์ กลิ่นหอม ดื่มเพลิน"},
-            {"id": "P009", "name": "เหล้าขาวไทย", "category": "แอลกอฮอล์", "price": 120.0, "stock": 16, "description": "เหล้าขาวไทย รสกลมกล่อม หอมอ่อน"},
-            {"id": "P010", "name": "สปิริตต์วอดก้า", "category": "แอลกอฮอล์", "price": 150.0, "stock": 12, "description": "วอดก้าคุณภาพดี สำหรับดื่มคู่กับอาหาร"},
-            {"id": "P011", "name": "ขนมปังปิ้ง", "category": "ขนม", "price": 22.0, "stock": 41, "description": "ขนมปังปิ้งกรอบ ทำแซนด์วิชได้ดี"},
-            {"id": "P012", "name": "กาน้ำร้อนไฟฟ้า", "category": "เครื่องใช้จิปาถะ", "price": 180.0, "stock": 9, "description": "กาน้ำร้อนไฟฟ้า ขนาดเล็กเหมาะบ้านพัก"},
-            {"id": "P013", "name": "เบียร์ช้าง", "category": "แอลกอฮอล์", "price": 88.0, "stock": 20, "description": "เบียร์ช้าง รสกลม หอมและเย็นจัด"},
-            {"id": "P014", "name": "คุกกี้ครีม", "category": "ขนม", "price": 33.0, "stock": 39, "description": "คุกกี้ครีมกรอบนุ่ม รสหวานกำลังดี"},
-            {"id": "P015", "name": "ถุงมือยาง", "category": "เครื่องใช้จิปาถะ", "price": 17.0, "stock": 55, "description": "ถุงมือยางใช้สำหรับงานบ้านและครัว"}
-        ];
-
-        let products = [];
-
-        // Load data on startup
-        document.addEventListener('DOMContentLoaded', () => {
-            const saved = localStorage.getItem('store_admin_products');
-            if (saved) {
-                products = JSON.parse(saved);
-            } else {
-                products = [...defaultProducts];
-                saveToLocalStorage();
-            }
-            renderProducts();
-        });
-
-        function saveToLocalStorage() {
-            localStorage.setItem('store_admin_products', JSON.stringify(products));
-        }
-
-        function resetData() {
-            if (confirm('คุณต้องการรีเซ็ตกลับเป็นสินค้าเริ่มต้น 100 รายการหรือไม่? ข้อมูลที่คุณแก้ไขจะถูกรีเซ็ต')) {
-                products = [...defaultProducts];
-                saveToLocalStorage();
-                renderProducts();
-                resetForm();
-            }
-        }
-
-        function updateStats() {
-            const total = products.length;
-            const value = products.reduce((sum, p) => sum + (p.price * p.stock), 0);
-            const lowStock = products.filter(p => p.stock > 0 && p.stock < 20).length;
-            const outStock = products.filter(p => p.stock === 0).length;
-
-            document.getElementById('statTotal').innerText = total + ' รายการ';
-            document.getElementById('statValue').innerText = '฿' + value.toLocaleString('th-TH', { minimumFractionDigits: 2 });
-            document.getElementById('statLowStock').innerText = lowStock + ' รายการ';
-            document.getElementById('statOutStock').innerText = outStock + ' รายการ';
-        }
-
-        function renderProducts() {
-            const tbody = document.getElementById('productTableBody');
-            const search = document.getElementById('searchInput').value.toLowerCase();
-            const category = document.getElementById('categoryFilter').value;
-
-            const filtered = products.filter(p => {
-                const matchSearch = p.name.toLowerCase().includes(search) || p.id.toLowerCase().includes(search);
-                const matchCategory = (category === 'ALL') || (p.category === category);
-                return matchSearch && matchCategory;
-            });
-
-            tbody.innerHTML = '';
-
-            if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-8 text-slate-400">ไม่พบรายการสินค้าที่ค้นหา</td></tr>`;
-            } else {
-                filtered.forEach((p) => {
-                    const realIndex = products.findIndex(item => item.id === p.id);
-                    let stockBadge = `<span class="px-2 py-0.5 rounded-full text-xs bg-emerald-100 text-emerald-700">${p.stock}</span>`;
-                    if (p.stock === 0) {
-                        stockBadge = `<span class="px-2 py-0.5 rounded-full text-xs bg-rose-100 text-rose-700 font-bold">หมด</span>`;
-                    } else if (p.stock < 20) {
-                        stockBadge = `<span class="px-2 py-0.5 rounded-full text-xs bg-amber-100 text-amber-700 font-bold">${p.stock}</span>`;
-                    }
-
-                    tbody.innerHTML += `
-                        <tr class="hover:bg-slate-50 transition">
-                            <td class="p-3 font-mono font-medium text-slate-600">${p.id}</td>
-                            <td class="p-3">
-                                <div class="font-semibold text-slate-800">${p.name}</div>
-                                <div class="text-xs text-slate-400">${p.description || '-'}</div>
-                            </td>
-                            <td class="p-3 text-slate-500">${p.category}</td>
-                            <td class="p-3 text-right font-medium text-slate-700">฿${parseFloat(p.price).toFixed(2)}</td>
-                            <td class="p-3 text-center">${stockBadge}</td>
-                            <td class="p-3 text-center space-x-1">
-                                <button onclick="editProduct(${realIndex})" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 px-2 py-1 rounded transition text-xs">แก้ไข</button>
-                                <button onclick="deleteProduct(${realIndex})" class="text-rose-600 hover:text-rose-900 bg-rose-50 px-2 py-1 rounded transition text-xs">ลบ</button>
-                            </td>
-                        </tr>
-                    `;
-                });
-            }
-
-            document.getElementById('showingText').innerText = `แสดง ${filtered.length} จากทั้งหมด ${products.length} รายการ`;
-            updateStats();
-        }
-
-        function handleFormSubmit(event) {
-            event.preventDefault();
-            const editIdx = parseInt(document.getElementById('editIndex').value);
-            
-            const productData = {
-                id: document.getElementById('pId').value.trim(),
-                name: document.getElementById('pName').value.trim(),
-                category: document.getElementById('pCategory').value,
-                price: parseFloat(document.getElementById('pPrice').value),
-                stock: parseInt(document.getElementById('pStock').value),
-                description: document.getElementById('pDesc').value.trim()
-            };
-
-            if (editIdx === -1) {
-                // Check Duplicate ID
-                if (products.some(p => p.id === productData.id)) {
-                    alert('รหัสสินค้านี้มีอยู่ในระบบแล้ว กรุณาใช้รหัสอื่น');
-                    return;
-                }
-                products.unshift(productData);
-            } else {
-                products[editIdx] = productData;
-            }
-
-            saveToLocalStorage();
-            renderProducts();
-            resetForm();
-            alert(editIdx === -1 ? 'เพิ่มสินค้าสำเร็จ!' : 'อัปเดตข้อมูลสินค้าสำเร็จ!');
-        }
-
-        function editProduct(index) {
-            const p = products[index];
-            document.getElementById('editIndex').value = index;
-            document.getElementById('pId').value = p.id;
-            document.getElementById('pId').readOnly = true;
-            document.getElementById('pName').value = p.name;
-            document.getElementById('pCategory').value = p.category;
-            document.getElementById('pPrice').value = p.price;
-            document.getElementById('pStock').value = p.stock;
-            document.getElementById('pDesc').value = p.description || '';
-
-            document.getElementById('formTitle').innerHTML = `<span class="text-amber-600">✏️</span> แก้ไขสินค้า (${p.id})`;
-            document.getElementById('submitBtn').innerText = '💾 บันทึกการแก้ไข';
-            document.getElementById('submitBtn').className = 'w-full bg-amber-600 hover:bg-amber-700 text-white font-semibold py-2.5 rounded-lg transition text-sm shadow-md';
-            document.getElementById('cancelEditBtn').classList.remove('hidden');
-        }
-
-        function deleteProduct(index) {
-            if (confirm(`คุณต้องการลบสินค้า "${products[index].name}" หรือไม่?`)) {
-                products.splice(index, 1);
-                saveToLocalStorage();
-                renderProducts();
-            }
-        }
-
-        function resetForm() {
-            document.getElementById('productForm').reset();
-            document.getElementById('editIndex').value = -1;
-            document.getElementById('pId').readOnly = false;
-
-            document.getElementById('formTitle').innerHTML = `<span class="text-indigo-600">📦</span> เพิ่มสินค้าใหม่`;
-            document.getElementById('submitBtn').innerText = '➕ เพิ่มรายการสินค้า';
-            document.getElementById('submitBtn').className = 'w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-lg transition text-sm shadow-md';
-            document.getElementById('cancelEditBtn').classList.add('hidden');
-        }
-    </script>
-</body>
-</html>
-
-<!DOCTYPE html>
-<html lang="th">
-<head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ระบบจัดการเอกสาร</title>
+  <title>ERP & Database Management System</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts (Prompt) -->
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+  
   <style>
-    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    body { margin: 0; padding: 20px; background-color: #f4f7f6; color: #333; }
-    
-    /* Navbar */
-    .navbar { display: flex; gap: 10px; background: #007bff; padding: 10px; border-radius: 8px; margin-bottom: 20px; }
-    .nav-btn { background: white; color: #007bff; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
-    .nav-btn.active { background: #0056b3; color: white; }
-
-    /* Page Container */
-    .page { display: none; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    * { font-family: 'Prompt', sans-serif; }
+    body { background-color: #f4f6f9; }
+    .sidebar { min-height: 100vh; background: #1e293b; color: white; }
+    .sidebar .nav-link { color: #94a3b8; border-radius: 8px; margin-bottom: 4px; padding: 12px 16px; }
+    .sidebar .nav-link:hover, .sidebar .nav-link.active { background: #3b82f6; color: white; }
+    .page { display: none; }
     .page.active { display: block; }
-
-    /* Form Styles */
-    .form-group { margin-bottom: 15px; }
-    label { display: block; margin-bottom: 5px; font-weight: bold; }
-    input, select, textarea { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
-    .btn-submit { background: #28a745; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-size: 16px; }
-    .btn-submit:hover { background: #218838; }
+    .card { border: none; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .btn-custom { border-radius: 8px; }
+    @media print {
+      .no-print { display: none !important; }
+      .sidebar { display: none !important; }
+      .main-content { width: 100% !important; margin: 0 !important; padding: 0 !important; }
+      .card { box-shadow: none !important; border: none !important; }
+    }
   </style>
 </head>
 <body>
 
-  <!-- เมนูนำทาง (Navbar) -->
-  <div class="navbar">
-    <button class="nav-btn active" onclick="switchPage('home')">หน้าหลัก</button>
-    <button class="nav-btn" onclick="switchPage('slip')">หน้าออกสลิป</button>
-    <button class="nav-btn" onclick="switchPage('po')">หน้าใบสั่งซื้อสินค้า</button>
+<div class="container-fluid">
+  <div class="row">
+    <!-- Sidebar / เมนูด้านข้าง -->
+    <div class="col-md-3 col-lg-2 sidebar p-3 no-print d-flex flex-column">
+      <div class="d-flex align-items-center mb-4 px-2">
+        <i class="fa-solid fa-database text-primary fa-2x me-2"></i>
+        <span class="fs-5 fw-bold">Enterprise DB</span>
+      </div>
+      <hr class="border-secondary">
+      <ul class="nav nav-pills flex-column mb-auto">
+        <li class="nav-item">
+          <a href="#" class="nav-link active" id="btn-stock" onclick="switchTab('stock')">
+            <i class="fa-solid fa-boxes-stacked me-2"></i> สต็อกสินค้า
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-link" id="btn-slip" onclick="switchTab('slip')">
+            <i class="fa-solid fa-receipt me-2"></i> ออกสลิปเงินเดือน
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-link" id="btn-po" onclick="switchTab('po')">
+            <i class="fa-solid fa-file-invoice-dollar me-2"></i> ใบสั่งซื้อสินค้า (PO)
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-link" id="btn-emp" onclick="switchTab('emp')">
+            <i class="fa-solid fa-users me-2"></i> ข้อมูลพนักงาน
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-link" id="btn-customer" onclick="switchTab('customer')">
+            <i class="fa-solid fa-address-book me-2"></i> ข้อมูลลูกค้า
+          </a>
+        </li>
+      </ul>
+      <div class="mt-auto px-2 fs-7 text-muted">
+        <small>System Status: <span class="text-success">● Ready</span></small>
+      </div>
+    </div>
+
+    <!-- Main Content / เนื้อหาหลัก -->
+    <div class="col-md-9 col-lg-10 p-4 main-content">
+
+      <!-- 1. ระบบจัดการสต็อกสินค้า -->
+      <div id="stock" class="page active">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h3 class="fw-bold text-dark"><i class="fa-solid fa-boxes-stacked text-primary me-2"></i>ระบบจัดการสต็อกสินค้า</h3>
+          <button class="btn btn-primary btn-custom no-print" data-bs-toggle="modal" data-bs-target="#productModal" onclick="clearProductForm()">
+            <i class="fa-solid fa-plus me-1"></i> เพิ่มสินค้าใหม่
+          </button>
+        </div>
+        <div class="card p-3">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th>รหัสสินค้า</th>
+                  <th>ชื่อสินค้า</th>
+                  <th>คงเหลือ</th>
+                  <th>ราคา/หน่วย</th>
+                  <th class="text-center no-print">จัดการ</th>
+                </tr>
+              </thead>
+              <tbody id="stockTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. ระบบออกสลิปเงินเดือน -->
+      <div id="slip" class="page">
+        <div class="d-flex justify-content-between align-items-center mb-4 no-print">
+          <h3 class="fw-bold text-dark"><i class="fa-solid fa-receipt text-primary me-2"></i>ออกสลิปเงินเดือน</h3>
+          <button class="btn btn-secondary btn-custom" onclick="window.print()"><i class="fa-solid fa-print me-1"></i> พิมพ์สลิป</button>
+        </div>
+        <div class="card p-4">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">เลือกพนักงาน</label>
+              <select id="slipEmpSelect" class="form-select" onchange="autoFillSalary()"></select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">ประจำเดือน</label>
+              <input type="month" class="form-control" id="slipMonth">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">เงินเดือนพื้นฐาน (บาท)</label>
+              <input type="number" id="slipSalary" class="form-control" value="0" oninput="calcSlipNet()">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">หัก ประกันสังคม/ภาษี (บาท)</label>
+              <input type="number" id="slipDeduct" class="form-control" value="0" oninput="calcSlipNet()">
+            </div>
+          </div>
+          <div class="alert alert-primary mt-4 d-flex justify-content-between align-items-center">
+            <span class="fs-5 fw-bold">ยอดเงินสุทธิที่ได้รับ:</span>
+            <span class="fs-3 fw-bold" id="slipNetTotal">0.00 บาท</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. ระบบใบสั่งซื้อสินค้า (PO) -->
+      <div id="po" class="page">
+        <div class="d-flex justify-content-between align-items-center mb-4 no-print">
+          <h3 class="fw-bold text-dark"><i class="fa-solid fa-file-invoice-dollar text-primary me-2"></i>ใบสั่งซื้อสินค้า (PO)</h3>
+          <button class="btn btn-secondary btn-custom" onclick="window.print()"><i class="fa-solid fa-print me-1"></i> พิมพ์ใบสั่งซื้อ</button>
+        </div>
+        <div class="card p-4">
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label">เลือกลูกค้า / ซัพพลายเออร์</label>
+              <select id="poCustomerSelect" class="form-select"></select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">เลือกสินค้า</label>
+              <select id="poProductSelect" class="form-select" onchange="updatePOPrice()"></select>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">จำนวน</label>
+              <input type="number" id="poQty" class="form-control" value="1" min="1" oninput="calcPOTotal()">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">ราคาต่อหน่วย</label>
+              <input type="number" id="poPrice" class="form-control" value="0" readonly>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">ราคารวม (รวม VAT 7%)</label>
+              <input type="text" id="poGrandTotal" class="form-control fs-5 fw-bold text-success" value="0.00" readonly>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. ระบบข้อมูลพนักงาน -->
+      <div id="emp" class="page">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h3 class="fw-bold text-dark"><i class="fa-solid fa-users text-primary me-2"></i>ข้อมูลพนักงาน</h3>
+          <button class="btn btn-primary btn-custom no-print" data-bs-toggle="modal" data-bs-target="#empModal" onclick="clearEmpForm()">
+            <i class="fa-solid fa-user-plus me-1"></i> เพิ่มพนักงาน
+          </button>
+        </div>
+        <div class="card p-3">
+          <table class="table table-hover align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>ชื่อ-นามสกุล</th>
+                <th>ตำแหน่ง</th>
+                <th>ฐานเงินเดือน</th>
+                <th class="text-center no-print">จัดการ</th>
+              </tr>
+            </thead>
+            <tbody id="empTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 5. ระบบข้อมูลลูกค้า -->
+      <div id="customer" class="page">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h3 class="fw-bold text-dark"><i class="fa-solid fa-address-book text-primary me-2"></i>ข้อมูลลูกค้า</h3>
+          <button class="btn btn-primary btn-custom no-print" data-bs-toggle="modal" data-bs-target="#custModal" onclick="clearCustForm()">
+            <i class="fa-solid fa-plus me-1"></i> เพิ่มลูกค้า
+          </button>
+        </div>
+        <div class="card p-3">
+          <table class="table table-hover align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>ชื่อลูกค้า/บริษัท</th>
+                <th>เบอร์โทรศัพท์</th>
+                <th>อีเมล</th>
+                <th class="text-center no-print">จัดการ</th>
+              </tr>
+            </thead>
+            <tbody id="custTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
   </div>
+</div>
 
-  <!-- 1. หน้าหลัก -->
-  <div id="home" class="page active">
-    <h2>แดชบอร์ด / หน้าหลัก</h2>
-    <p>ยินดีต้อนรับสู่ระบบจัดการเอกสาร เลือกเมนูด้านบนเพื่อทำรายการ</p>
-    <ul>
-      <li>ออกสลิปเงินเดือน / สลิปชำระเงิน</li>
-      <li>สร้างใบสั่งซื้อสินค้า (PO)</li>
-    </ul>
+<!-- Modals สำหรับเพิ่ม/แก้ไขข้อมูล -->
+<!-- Modal สินค้า -->
+<div class="modal fade" id="productModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">ข้อมูลสินค้า</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="pIndex">
+        <div class="mb-2"><label>รหัสสินค้า</label><input type="text" id="pCode" class="form-control"></div>
+        <div class="mb-2"><label>ชื่อสินค้า</label><input type="text" id="pName" class="form-control"></div>
+        <div class="mb-2"><label>จำนวนคงเหลือ</label><input type="number" id="pQty" class="form-control"></div>
+        <div class="mb-2"><label>ราคา</label><input type="number" id="pPrice" class="form-control"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="saveProduct()">บันทึก</button>
+      </div>
+    </div>
   </div>
+</div>
 
-  <!-- 2. หน้าออกสลิป -->
-  <div id="slip" class="page">
-    <h2>แบบฟอร์มออกสลิปเงินเดือน</h2>
-    <form onsubmit="alert('บันทึกสลิปเรียบร้อย'); return false;">
-      <div class="form-group">
-        <label>ชื่อ-นามสกุล พนักงาน:</label>
-        <input type="text" placeholder="ระบุชื่อพนักงาน" required>
+<!-- Modal พนักงาน -->
+<div class="modal fade" id="empModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">ข้อมูลพนักงาน</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-      <div class="form-group">
-        <label>ยอดเงินสุทธิ (บาท):</label>
-        <input type="number" placeholder="0.00" required>
+      <div class="modal-body">
+        <input type="hidden" id="eIndex">
+        <div class="mb-2"><label>ชื่อ-นามสกุล</label><input type="text" id="eName" class="form-control"></div>
+        <div class="mb-2"><label>ตำแหน่ง</label><input type="text" id="eRole" class="form-control"></div>
+        <div class="mb-2"><label>ฐานเงินเดือน</label><input type="number" id="eSalary" class="form-control"></div>
       </div>
-      <div class="form-group">
-        <label>วันที่จ่าย:</label>
-        <input type="date" required>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="saveEmp()">บันทึก</button>
       </div>
-      <button type="submit" class="btn-submit">พิมพ์/บันทึกสลิป</button>
-    </form>
+    </div>
   </div>
+</div>
 
-  <!-- 3. หน้าใบสั่งซื้อสินค้า -->
-  <div id="po" class="page">
-    <h2>แบบฟอร์มใบสั่งซื้อสินค้า (Purchase Order)</h2>
-    <form onsubmit="alert('สร้างใบสั่งซื้อเรียบร้อย'); return false;">
-      <div class="form-group">
-        <label>ชื่อผู้ขาย/ซัพพลายเออร์:</label>
-        <input type="text" placeholder="ระบุชื่อบริษัท/ร้านค้า" required>
+<!-- Modal ลูกค้า -->
+<div class="modal fade" id="custModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">ข้อมูลลูกค้า</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-      <div class="form-group">
-        <label>รายการสินค้า:</label>
-        <input type="text" placeholder="ชื่อสินค้า" required>
+      <div class="modal-body">
+        <input type="hidden" id="cIndex">
+        <div class="mb-2"><label>ชื่อ/บริษัท</label><input type="text" id="cName" class="form-control"></div>
+        <div class="mb-2"><label>เบอร์โทรศัพท์</label><input type="text" id="cPhone" class="form-control"></div>
+        <div class="mb-2"><label>อีเมล</label><input type="email" id="cEmail" class="form-control"></div>
       </div>
-      <div class="form-group">
-        <label>จำนวน:</label>
-        <input type="number" value="1" min="1" required>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="saveCust()">บันทึก</button>
       </div>
-      <div class="form-group">
-        <label>ราคารวมทั้งสิ้น (บาท):</label>
-        <input type="number" placeholder="0.00" required>
-      </div>
-      <button type="submit" class="btn-submit">ออกใบสั่งซื้อ</button>
-    </form>
+    </div>
   </div>
+</div>
 
-  <!-- สคริปต์สลับหน้า -->
-  <script>
-    function switchPage(pageId) {
-      // ซ่อนทุกหน้า
-      document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
-      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+<!-- Bootstrap JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-      // แสดงหน้าเฉพาะที่เลือก
-      document.getElementById(pageId).classList.add('active');
-      
-      // เปลี่ยนปุ่ม Active
-      event.target.classList.add('active');
+<script>
+  // ฐานข้อมูลจำลอง (Database Initial State)
+  let db = {
+    products: JSON.parse(localStorage.getItem('db_products')) || [
+      { code: 'P001', name: 'สินค้า A', qty: 50, price: 120 },
+      { code: 'P002', name: 'สินค้า B', qty: 20, price: 350 }
+    ],
+    employees: JSON.parse(localStorage.getItem('db_emp')) || [
+      { name: 'สมชาย ใจดี', role: 'ผู้จัดการ', salary: 30000 },
+      { name: 'สมหญิง รักดี', role: 'บัญชี', salary: 22000 }
+    ],
+    customers: JSON.parse(localStorage.getItem('db_cust')) || [
+      { name: 'บริษัท เอบีซี จำกัด', phone: '081-234-5678', email: 'contact@abc.com' }
+    ]
+  };
+
+  function saveData() {
+    localStorage.setItem('db_products', JSON.stringify(db.products));
+    localStorage.setItem('db_emp', JSON.stringify(db.employees));
+    localStorage.setItem('db_cust', JSON.stringify(db.customers));
+    renderAll();
+  }
+
+  function switchTab(tabId) {
+    document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    document.getElementById('btn-' + tabId).classList.add('active');
+  }
+
+  // --- Render Tables & Dropdowns ---
+  function renderAll() {
+    // 1. Stock
+    let stockHTML = '';
+    db.products.forEach((p, i) => {
+      stockHTML += `<tr>
+        <td>${p.code}</td>
+        <td>${p.name}</td>
+        <td><span class="badge ${p.qty > 10 ? 'bg-success' : 'bg-danger'}">${p.qty}</span></td>
+        <td>${p.price.toLocaleString()} บาท</td>
+        <td class="text-center no-print">
+          <button class="btn btn-sm btn-outline-warning me-1" onclick="editProduct(${i})"><i class="fa-solid fa-pen"></i></button>
+          <button class="btn btn-sm btn-outline-danger" onclick="deleteProduct(${i})"><i class="fa-solid fa-trash"></i></button>
+        </td>
+      </tr>`;
+    });
+    document.getElementById('stockTable').innerHTML = stockHTML;
+
+    // 2. Employees
+    let empHTML = '';
+    let empSelectHTML = '<option value="">-- เลือกพนักงาน --</option>';
+    db.employees.forEach((e, i) => {
+      empHTML += `<tr>
+        <td>${e.name}</td>
+        <td>${e.role}</td>
+        <td>${e.salary.toLocaleString()} บาท</td>
+        <td class="text-center no-print">
+          <button class="btn btn-sm btn-outline-warning me-1" onclick="editEmp(${i})"><i class="fa-solid fa-pen"></i></button>
+          <button class="btn btn-sm btn-outline-danger" onclick="deleteEmp(${i})"><i class="fa-solid fa-trash"></i></button>
+        </td>
+      </tr>`;
+      empSelectHTML += `<option value="${i}">${e.name} (${e.role})</option>`;
+    });
+    document.getElementById('empTable').innerHTML = empHTML;
+    document.getElementById('slipEmpSelect').innerHTML = empSelectHTML;
+
+    // 3. Customers
+    let custHTML = '';
+    let custSelectHTML = '<option value="">-- เลือกลูกค้า --</option>';
+    db.customers.forEach((c, i) => {
+      custHTML += `<tr>
+        <td>${c.name}</td>
+        <td>${c.phone}</td>
+        <td>${c.email}</td>
+        <td class="text-center no-print">
+          <button class="btn btn-sm btn-outline-warning me-1" onclick="editCust(${i})"><i class="fa-solid fa-pen"></i></button>
+          <button class="btn btn-sm btn-outline-danger" onclick="deleteCust(${i})"><i class="fa-solid fa-trash"></i></button>
+        </td>
+      </tr>`;
+      custSelectHTML += `<option value="${i}">${c.name}</option>`;
+    });
+    document.getElementById('custTable').innerHTML = custHTML;
+    document.getElementById('poCustomerSelect').innerHTML = custSelectHTML;
+
+    // 4. Product Select in PO
+    let prodSelectHTML = '<option value="">-- เลือกสินค้า --</option>';
+    db.products.forEach((p, i) => {
+      prodSelectHTML += `<option value="${i}">${p.name} (${p.price} บาท)</option>`;
+    });
+    document.getElementById('poProductSelect').innerHTML = prodSelectHTML;
+  }
+
+  // --- Functions CRUD Products ---
+  function clearProductForm() { document.getElementById('pIndex').value = ''; document.getElementById('pCode').value = ''; document.getElementById('pName').value = ''; document.getElementById('pQty').value = ''; document.getElementById('pPrice').value = ''; }
+  function saveProduct() {
+    let idx = document.getElementById('pIndex').value;
+    let data = { code: document.getElementById('pCode').value, name: document.getElementById('pName').value, qty: parseInt(document.getElementById('pQty').value)||0, price: parseFloat(document.getElementById('pPrice').value)||0 };
+    if(idx === '') db.products.push(data); else db.products[idx] = data;
+    saveData();
+    bootstrap.Modal.getInstance(document.getElementById('productModal')).hide();
+  }
+  function editProduct(i) {
+    document.getElementById('pIndex').value = i;
+    document.getElementById('pCode').value = db.products[i].code;
+    document.getElementById('pName').value = db.products[i].name;
+    document.getElementById('pQty').value = db.products[i].qty;
+    document.getElementById('pPrice').value = db.products[i].price;
+    new bootstrap.Modal(document.getElementById('productModal')).show();
+  }
+  function deleteProduct(i) { if(confirm('ยืนยันลบสินค้านี้?')) { db.products.splice(i,1); saveData(); } }
+
+  // --- Functions CRUD Employee ---
+  function clearEmpForm() { document.getElementById('eIndex').value = ''; document.getElementById('eName').value = ''; document.getElementById('eRole').value = ''; document.getElementById('eSalary').value = ''; }
+  function saveEmp() {
+    let idx = document.getElementById('eIndex').value;
+    let data = { name: document.getElementById('eName').value, role: document.getElementById('eRole').value, salary: parseFloat(document.getElementById('eSalary').value)||0 };
+    if(idx === '') db.employees.push(data); else db.employees[idx] = data;
+    saveData();
+    bootstrap.Modal.getInstance(document.getElementById('empModal')).hide();
+  }
+  function editEmp(i) {
+    document.getElementById('eIndex').value = i;
+    document.getElementById('eName').value = db.employees[i].name;
+    document.getElementById('eRole').value = db.employees[i].role;
+    document.getElementById('eSalary').value = db.employees[i].salary;
+    new bootstrap.Modal(document.getElementById('empModal')).show();
+  }
+  function deleteEmp(i) { if(confirm('ยืนยันลบพนักงานนี้?')) { db.employees.splice(i,1); saveData(); } }
+
+  // --- Functions CRUD Customer ---
+  function clearCustForm() { document.getElementById('cIndex').value = ''; document.getElementById('cName').value = ''; document.getElementById('cPhone').value = ''; document.getElementById('cEmail').value = ''; }
+  function saveCust() {
+    let idx = document.getElementById('cIndex').value;
+    let data = { name: document.getElementById('cName').value, phone: document.getElementById('cPhone').value, email: document.getElementById('cEmail').value };
+    if(idx === '') db.customers.push(data); else db.customers[idx] = data;
+    saveData();
+    bootstrap.Modal.getInstance(document.getElementById('custModal')).hide();
+  }
+  function editCust(i) {
+    document.getElementById('cIndex').value = i;
+    document.getElementById('cName').value = db.customers[i].name;
+    document.getElementById('cPhone').value = db.customers[i].phone;
+    document.getElementById('cEmail').value = db.customers[i].email;
+    new bootstrap.Modal(document.getElementById('custModal')).show();
+  }
+  function deleteCust(i) { if(confirm('ยืนยันลบลูกค้านี้?')) { db.customers.splice(i,1); saveData(); } }
+
+  // --- Calculation Logic ---
+  function autoFillSalary() {
+    let idx = document.getElementById('slipEmpSelect').value;
+    if(idx !== '') {
+      document.getElementById('slipSalary').value = db.employees[idx].salary;
+      calcSlipNet();
     }
-  </script>
+  }
+  function calcSlipNet() {
+    let sal = parseFloat(document.getElementById('slipSalary').value) || 0;
+    let ded = parseFloat(document.getElementById('slipDeduct').value) || 0;
+    document.getElementById('slipNetTotal').innerText = (sal - ded).toLocaleString('th-TH', {minimumFractionDigits:2}) + ' บาท';
+  }
+  function updatePOPrice() {
+    let idx = document.getElementById('poProductSelect').value;
+    if(idx !== '') {
+      document.getElementById('poPrice').value = db.products[idx].price;
+      calcPOTotal();
+    }
+  }
+  function calcPOTotal() {
+    let qty = parseFloat(document.getElementById('poQty').value) || 0;
+    let price = parseFloat(document.getElementById('poPrice').value) || 0;
+    let total = (qty * price) * 1.07;
+    document.getElementById('poGrandTotal').value = total.toLocaleString('th-TH', {minimumFractionDigits:2}) + ' บาท';
+  }
+
+  // Initialize
+  renderAll();
+</script>
 
 </body>
+</html>
 </html>

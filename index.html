@@ -330,3 +330,111 @@
     </script>
 </body>
 </html>
+
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบจัดการเอกสาร</title>
+  <style>
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { margin: 0; padding: 20px; background-color: #f4f7f6; color: #333; }
+    
+    /* Navbar */
+    .navbar { display: flex; gap: 10px; background: #007bff; padding: 10px; border-radius: 8px; margin-bottom: 20px; }
+    .nav-btn { background: white; color: #007bff; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+    .nav-btn.active { background: #0056b3; color: white; }
+
+    /* Page Container */
+    .page { display: none; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .page.active { display: block; }
+
+    /* Form Styles */
+    .form-group { margin-bottom: 15px; }
+    label { display: block; margin-bottom: 5px; font-weight: bold; }
+    input, select, textarea { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+    .btn-submit { background: #28a745; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-size: 16px; }
+    .btn-submit:hover { background: #218838; }
+  </style>
+</head>
+<body>
+
+  <!-- เมนูนำทาง (Navbar) -->
+  <div class="navbar">
+    <button class="nav-btn active" onclick="switchPage('home')">หน้าหลัก</button>
+    <button class="nav-btn" onclick="switchPage('slip')">หน้าออกสลิป</button>
+    <button class="nav-btn" onclick="switchPage('po')">หน้าใบสั่งซื้อสินค้า</button>
+  </div>
+
+  <!-- 1. หน้าหลัก -->
+  <div id="home" class="page active">
+    <h2>แดชบอร์ด / หน้าหลัก</h2>
+    <p>ยินดีต้อนรับสู่ระบบจัดการเอกสาร เลือกเมนูด้านบนเพื่อทำรายการ</p>
+    <ul>
+      <li>ออกสลิปเงินเดือน / สลิปชำระเงิน</li>
+      <li>สร้างใบสั่งซื้อสินค้า (PO)</li>
+    </ul>
+  </div>
+
+  <!-- 2. หน้าออกสลิป -->
+  <div id="slip" class="page">
+    <h2>แบบฟอร์มออกสลิปเงินเดือน</h2>
+    <form onsubmit="alert('บันทึกสลิปเรียบร้อย'); return false;">
+      <div class="form-group">
+        <label>ชื่อ-นามสกุล พนักงาน:</label>
+        <input type="text" placeholder="ระบุชื่อพนักงาน" required>
+      </div>
+      <div class="form-group">
+        <label>ยอดเงินสุทธิ (บาท):</label>
+        <input type="number" placeholder="0.00" required>
+      </div>
+      <div class="form-group">
+        <label>วันที่จ่าย:</label>
+        <input type="date" required>
+      </div>
+      <button type="submit" class="btn-submit">พิมพ์/บันทึกสลิป</button>
+    </form>
+  </div>
+
+  <!-- 3. หน้าใบสั่งซื้อสินค้า -->
+  <div id="po" class="page">
+    <h2>แบบฟอร์มใบสั่งซื้อสินค้า (Purchase Order)</h2>
+    <form onsubmit="alert('สร้างใบสั่งซื้อเรียบร้อย'); return false;">
+      <div class="form-group">
+        <label>ชื่อผู้ขาย/ซัพพลายเออร์:</label>
+        <input type="text" placeholder="ระบุชื่อบริษัท/ร้านค้า" required>
+      </div>
+      <div class="form-group">
+        <label>รายการสินค้า:</label>
+        <input type="text" placeholder="ชื่อสินค้า" required>
+      </div>
+      <div class="form-group">
+        <label>จำนวน:</label>
+        <input type="number" value="1" min="1" required>
+      </div>
+      <div class="form-group">
+        <label>ราคารวมทั้งสิ้น (บาท):</label>
+        <input type="number" placeholder="0.00" required>
+      </div>
+      <button type="submit" class="btn-submit">ออกใบสั่งซื้อ</button>
+    </form>
+  </div>
+
+  <!-- สคริปต์สลับหน้า -->
+  <script>
+    function switchPage(pageId) {
+      // ซ่อนทุกหน้า
+      document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+
+      // แสดงหน้าเฉพาะที่เลือก
+      document.getElementById(pageId).classList.add('active');
+      
+      // เปลี่ยนปุ่ม Active
+      event.target.classList.add('active');
+    }
+  </script>
+
+</body>
+</html>
